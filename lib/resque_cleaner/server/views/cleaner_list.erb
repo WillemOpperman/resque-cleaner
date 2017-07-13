@@ -9,6 +9,9 @@
   <div class="clearfix">
     <div class="control_panel sub_header">
       <form method="get">
+        <span class="queue_filter">
+          Queue: <%= queue_filter("filter_queue","q",@queues,@queue)%>
+        </span>
         <span class="class_filter">
           Class: <%= class_filter("filter_class","c",@klasses,@klass)%>
         </span>
@@ -33,6 +36,7 @@
     <div class="clearfix">
       <div class="control_panel sub_header">
         <form method="post" id="exec" action="cleaner_exec">
+          <input type="hidden" name="q" value="<%=@queue%>" />
           <input type="hidden" name="c" value="<%=@klass%>" />
           <input type="hidden" name="f" value="<%=@from%>" />
           <input type="hidden" name="t" value="<%=@to%>" />

@@ -80,6 +80,16 @@ module ResqueCleaner
             html += "</select>"
           end
 
+          def queue_filter(id, name, queues, value)
+            html = "<select id=\"#{id}\" name=\"#{name}\">"
+            html += "<option value=\"\">-</option>"
+            queues.each do |k|
+              selected = k == value ? 'selected="selected"' : ''
+              html += "<option #{selected} value=\"#{k}\">#{k}</option>"
+            end
+            html += "</select>"
+          end
+
           def class_filter(id, name, klasses, value)
             html = "<select id=\"#{id}\" name=\"#{name}\">"
             html += "<option value=\"\">-</option>"
@@ -155,6 +165,7 @@ module ResqueCleaner
 
           @paginate = Paginate.new(@failed, @list_url, params[:p].to_i)
 
+          @queues = cleaner.stats_by_queue.keys
           @klasses = cleaner.stats_by_class.keys
           @exceptions = cleaner.stats_by_exception.keys
           @count = cleaner.select(&block).size
@@ -225,6 +236,7 @@ module ResqueCleaner
     def load_cleaner_filter
       @from = params[:f]=="" ? nil : params[:f]
       @to = params[:t]=="" ? nil : params[:t]
+      @queue = params[:q]=="" ? nil : params[:q]
       @klass = params[:c]=="" ? nil : params[:c]
       @exception = params[:ex]=="" ? nil : params[:ex]
       @regex = params[:regex]=="" ? nil : params[:regex]
@@ -232,6 +244,7 @@ module ResqueCleaner
 
     def build_urls
       params = {
+        q: @queue,
         c: @klass,
         ex: @exception,
         f: @from,
@@ -247,6 +260,7 @@ module ResqueCleaner
       block = lambda{|j|
         (!@from || j.after?(hours_ago(@from))) &&
         (!@to || j.before?(hours_ago(@to))) &&
+        (!@queue || j.queue?(@queue)) &&
         (!@klass || j.klass?(@klass)) &&
         (!@exception || j.exception?(@exception)) &&
         (!@sha1 || @sha1[Digest::SHA1.hexdigest(j.to_json)]) &&
